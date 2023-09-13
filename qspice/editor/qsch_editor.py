@@ -289,22 +289,19 @@ class QschEditor(BaseEditor):
         min_y = 100000   # High enough to be sure it will be replaced
         max_y = -100000  # Low enough to be sure it will be replaced
         for tag in self.schematic.items:
-            if tag.tag == 'component':
+            if tag.tag in ('component', 'net', 'text'):
                 x1, y1 = tag.get_attr(1)
                 x2, y2 = x1, y1  # todo: the whole component primitives
             elif tag.tag == 'wire':
                 x1, y1 = tag.get_attr(1)
                 x2, y2 = tag.get_attr(2)
-            elif tag.tag == 'net':
-                x1, y1 = tag.get_attr(1)
-                x2, y2 = x1, y1
 
             min_x = min(min_x, x1, x2)
             max_x = max(max_x, x1, x2)
             min_y = min(min_y, y1, y2)
             max_y = max(max_y, y1, y2)
 
-        return min_x, min_y - 24  # Setting the text in the bottom left corner of the canvas
+        return min_x, min_y - 240  # Setting the text in the bottom left corner of the canvas
 
     def add_instruction(self, instruction: str) -> None:
         instruction = instruction.strip()  # Clean any end of line terminators
@@ -324,12 +321,12 @@ class QschEditor(BaseEditor):
         # If we get here, then the instruction was not found, so we need to add it
         x, y = self._get_text_space()
         tag = QschTag(f'«text ({x},{y}) 1 0 0 0x1000000 -1 -1 "{instruction}"»', 0)
-        self.schematic.items(tag)
+        self.schematic.items.append(tag)
 
     def remove_instruction(self, instruction: str) -> None:
         for text_tag in self.schematic.get_items('text'):
             text = text_tag.get_attr(QSCH_TEXT_STR_ATTR)
-            if instruction in text_tag:
+            if instruction in text:
                 self.schematic.items.remove(text_tag)
                 return  # Job done, can exit this method
 
