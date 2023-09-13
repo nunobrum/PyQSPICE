@@ -28,16 +28,13 @@ __all__ = ('QschEditor', )
 
 _logger = logging.getLogger("qspice.QschEditor")
 
-TEXT_REGEX = re.compile(r"TEXT (-?\d+)\s+(-?\d+)\s+(Left|Right|Top|Bottom)\s\d+\s*(?P<type>[!;])(?P<text>.*)",
-                        re.IGNORECASE)
-TEXT_REGEX_X = 1
-TEXT_REGEX_Y = 2
-TEXT_REGEX_ALIGN = 3
-TEXT_REGEX_TYPE = 4
-TEXT_REGEX_TEXT = 5
-
-END_LINE_TERM = "\n"
 QSCH_HEADER = (255, 216, 255, 219)
+QSCH_TEXT_POS = 1
+QSCH_TEXT_STR_ATTR = 8
+QSCH_COMPONENT_POS = 1
+QSCH_SYMBOL_TEXT_REFDES = 0
+QSCH_SYMBOL_TEXT_VALUE = 1
+
 
 class QschReadingError(IOError):
     ...
@@ -47,7 +44,7 @@ class QschTag:
     def __init__(self, stream, start):
         assert stream[start] == '«'
         self.start = start
-        self.children = []
+        self.items = []
         self.tokens = []
         i = start + 1
         i0 = i
@@ -56,7 +53,7 @@ class QschTag:
                 child = QschTag(stream, i)
                 i = child.stop
                 i0 = i + 1
-                self.children.append(child)
+                self.items.append(child)
             elif stream[i] == '»':
                 self.stop = i + 1
                 if i > i0:
@@ -71,6 +68,11 @@ class QschTag:
                 i += 1
                 while stream[i] != '"':
                     i += 1
+            elif stream[i] == '(':
+                # todo: handle nested parenthesis and also [] and {}
+                i += 1
+                while stream[i] != ')':
+                    i += 1
             i += 1
         else:
             raise IOError("Missing » when reading file")
@@ -81,9 +83,9 @@ class QschTag:
 
     def out(self, level):
         spaces = '  ' * level
-        if len(self.children):
+        if len(self.items):
             return (f"{spaces}«{' '.join(self.tokens)}\n"
-                    f"{''.join(tag.out(level+1) for tag in self.children)}"
+                    f"{''.join(tag.out(level+1) for tag in self.items)}"
                     f"{spaces}»\n")
         else:
             return f"{'  ' * level}«{' '.join(self.tokens)}»\n"
@@ -93,7 +95,7 @@ class QschTag:
         return self.tokens[0]
 
     def get_items(self, item) -> List['QschTag']:
-        answer = [tag for tag in self.children if tag.tag == item]
+        answer = [tag for tag in self.items if tag.tag == item]
         return answer
 
     def get_attr(self, index: int):
@@ -107,6 +109,18 @@ class QschTag:
         else:
             return int(a)
 
+    def set_attr(self, index: int, value):
+        if isinstance(value, int):
+            value_str = str(value)
+        elif isinstance(value, str):
+            if value.startswith('0x'):
+                value_str = value
+            else:
+                value_str = f'"{value}"'
+        else:
+            raise ValueError("Object not supported in set_attr")
+        self.tokens[index] = value_str
+
     def get_text(self, label) -> str:
         a = self.get_items(label+':')
         if len(a) != 1:
@@ -119,11 +133,8 @@ class QschEditor(BaseEditor):
 
     def __init__(self, asc_file: str):
         self._qsch_file_path = Path(asc_file)
-        self._qsch_stream = ""
         self.schematic = None
-
         self._symbols = {}
-        self._texts = []  # This is only here to avoid cycling over the netlist everytime we need to retrieve the texts
         if not self._qsch_file_path.exists():
             raise FileNotFoundError(f"File {asc_file} not found")
         # read the file into memory
@@ -145,26 +156,25 @@ class QschEditor(BaseEditor):
             for c in QSCH_HEADER:
                 qsch_file.write(chr(c))
             qsch_file.write(self.schematic.out(0))
-
+            qsch_file.write('\n')  # Terminates the new line
 
     def reset_netlist(self):
         with open(self._qsch_file_path, 'r') as asc_file:
             _logger.info(f"Reading QSCH file {self._qsch_file_path}")
-            self._qsch_stream = asc_file.read()
-        self._parse_asc_file()
+            stream = asc_file.read()
+        self._parse_qsch_stream(stream)
 
-    def _parse_asc_file(self):
+    def _parse_qsch_stream(self, stream):
 
         self._symbols.clear()
-        self._texts.clear()
         _logger.debug("Parsing ASC file")
-        header = tuple(ord(c) for c in self._qsch_stream[:4])
+        header = tuple(ord(c) for c in stream[:4])
 
         if header != QSCH_HEADER:
             raise QschReadingError("Missing header. The QSCH file should start with: " +
                                    f"{' '.join(f'{c:02X}' for c in QSCH_HEADER)}")
 
-        schematic = QschTag(self._qsch_stream, 4)
+        schematic = QschTag(stream, 4)
         self.schematic = schematic
 
         components = self.schematic.get_items('component')
@@ -175,18 +185,14 @@ class QschEditor(BaseEditor):
             texts = symbol.get_items('text')
             if len(texts) < 2:
                 raise RuntimeError(f"Missing texts in component at coordinates {component.get_attr(1)}")
-            refdes = texts[0].get_attr(8)
-            value = texts[1].get_attr(8)
+            refdes = texts[QSCH_SYMBOL_TEXT_REFDES].get_attr(QSCH_TEXT_STR_ATTR)
+            value = texts[QSCH_SYMBOL_TEXT_VALUE].get_attr(QSCH_TEXT_STR_ATTR)
             self._symbols[refdes] = {
                 'type': typ,
                 'description': desc,
                 'model': value,
                 'tag': component
             }
-
-        for text_tag in self.schematic.get_items('text'):
-            text = text_tag.get_attr(8)
-            self._texts.append(text)
 
     def get_component_info(self, component) -> dict:
         """Returns the component information as a dictionary"""
@@ -199,7 +205,7 @@ class QschEditor(BaseEditor):
         command_upped = command.upper()
         text_tags = self.schematic.get_items('text')
         for tag in text_tags:
-            line = tag.get_attr(8)
+            line = tag.get_attr(QSCH_TEXT_STR_ATTR)
             if line.upper().startswith(command_upped):
                 match = search_expression.search(line)
                 if match:
@@ -224,21 +230,21 @@ class QschEditor(BaseEditor):
                 value_str = format_eng(value)
             else:
                 value_str = value
-            line: str = tag.get_attr(8)
-            match = param_regex.search(line)  # repeating the search, so we update the correct start/stop parameter
+            text: str = tag.get_attr(QSCH_TEXT_STR_ATTR)
+            match = param_regex.search(text)  # repeating the search, so we update the correct start/stop parameter
             start, stop = match.span(param_regex.groupindex['replace'])
-            tag.token[8] = "{}={}".format(param, value_str) + line[stop:]
+            text =  text[:start] + "{}={}".format(param, value_str) + text[stop:]
+            tag.set_attr(QSCH_TEXT_STR_ATTR, text)
             _logger.info(f"Parameter {param} updated to {value_str}")
-            _logger.debug(f"Text at {tag.get_attr(1)} Updated")
+            _logger.debug(f"Text at {tag.get_attr(QSCH_TEXT_POS)} Updated to {text}")
         else:
             # Was not found so we need to add it,
             _logger.debug(f"Parameter {param} not found in ASC file, adding it")
             x, y = self._get_text_space()
             tag = QschTag(f'«text ({x},{y}) 1 0 0 0x1000000 -1 -1 ".param {param}={value}"»', 0)
-            self.schematic.children(tag)
+            self.schematic.items.append(tag)
             _logger.info(f"Parameter {param} added with value {value}")
-            _logger.debug(f"Text added to {tag.get_attr(1)} Added: {tag.get_attr(8)}")
-        self._parse_asc_file()
+            _logger.debug(f"Text added to {tag.get_attr(QSCH_TEXT_POS)} Added: {tag.get_attr(QSCH_TEXT_STR_ATTR)}")
 
     def set_component_value(self, device: str, value: Union[str, int, float]) -> None:
         if isinstance(value, str):
@@ -252,8 +258,8 @@ class QschEditor(BaseEditor):
         component: QschTag = comp_info['tag']
         symbol: QschTag = component.get_items('symbol')[0]
         texts = symbol.get_items('text')
-        assert texts[0].get_attr(8) == device
-        texts[1].tokens[8] = model
+        assert texts[QSCH_SYMBOL_TEXT_REFDES].get_attr(QSCH_TEXT_STR_ATTR) == device
+        texts[QSCH_SYMBOL_TEXT_VALUE].set_attr(QSCH_TEXT_STR_ATTR, model)
         _logger.info(f"Component {device} updated to {model}")
         _logger.debug(f"Component at :{component.get_attr(1)} Updated")
 
@@ -272,7 +278,7 @@ class QschEditor(BaseEditor):
     def remove_component(self, designator: str):
         comp_info = self.get_component_info(designator)
         component: QschTag = comp_info['tag']
-        self.schematic.children.remove(component)
+        self.schematic.items.remove(component)
 
     def _get_text_space(self):
         """
@@ -282,7 +288,7 @@ class QschEditor(BaseEditor):
         max_x = -100000  # Low enough to be sure it will be replaced
         min_y = 100000   # High enough to be sure it will be replaced
         max_y = -100000  # Low enough to be sure it will be replaced
-        for tag in self.schematic:
+        for tag in self.schematic.items:
             if tag.tag == 'component':
                 x1, y1 = tag.get_attr(1)
                 x2, y2 = x1, y1  # todo: the whole component primitives
@@ -298,7 +304,7 @@ class QschEditor(BaseEditor):
             min_y = min(min_y, y1, y2)
             max_y = max(max_y, y1, y2)
 
-        return min_x, max_y + 24  # Setting the text in the bottom left corner of the canvas
+        return min_x, min_y - 24  # Setting the text in the bottom left corner of the canvas
 
     def add_instruction(self, instruction: str) -> None:
         instruction = instruction.strip()  # Clean any end of line terminators
@@ -306,31 +312,26 @@ class QschEditor(BaseEditor):
 
         if command in UNIQUE_SIMULATION_DOT_INSTRUCTIONS:
             # Before adding new instruction, if it is a unique instruction, we just replace it
-            i = 0
-            while i < len(self._texts):
-                line = self._texts[i]
-                command = line.split()[0].upper()
+            for text_tag in self.schematic.get_items('text'):
+                text = text_tag.get_attr(QSCH_TEXT_STR_ATTR)
+                command = text.split()[0].upper()
                 if command in UNIQUE_SIMULATION_DOT_INSTRUCTIONS:
-                    line_tag = self.schematic.get_items('text')[i]
-                    line_tag.token[8] = f'"{instruction}"'
+                    text_tag.set_attr(QSCH_TEXT_STR_ATTR, instruction)
                     return  # Job done, can exit this method
-                i += 1
+
         elif command.startswith('.PARAM'):
             raise RuntimeError('The .PARAM instruction should be added using the "set_parameter" method')
         # If we get here, then the instruction was not found, so we need to add it
         x, y = self._get_text_space()
         tag = QschTag(f'«text ({x},{y}) 1 0 0 0x1000000 -1 -1 "{instruction}"»', 0)
-        self.schematic.children(tag)
+        self.schematic.items(tag)
 
     def remove_instruction(self, instruction: str) -> None:
-        i = 0
-        while i < len(self._texts):
-            line_no, line = self._texts[i]
-            if instruction in line:
-                del self._asc_file_lines[line_no]
-                self._parse_asc_file()
+        for text_tag in self.schematic.get_items('text'):
+            text = text_tag.get_attr(QSCH_TEXT_STR_ATTR)
+            if instruction in text_tag:
+                self.schematic.items.remove(text_tag)
                 return  # Job done, can exit this method
-            i += 1
 
         msg = f'Instruction "{instruction}" not found'
         _logger.error(msg)
