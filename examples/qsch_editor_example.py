@@ -1,4 +1,4 @@
-from qspice.editor.qsch_editor import QschEditor
+from spicelib.editor.qsch_editor import QschEditor
 
 audio_amp = QschEditor("./testfiles/AudioAmp.qsch")
 print("All Components", audio_amp.get_components())

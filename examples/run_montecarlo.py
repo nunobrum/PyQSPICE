@@ -3,6 +3,7 @@ from spicelib.sim.tookit.montecarlo import Montecarlo  # Imports the Montecarlo 
 
 sallenkey = QschEditor("./testfiles/AudioAmp.qsch")  # Reads the asc file into memory
 runner = SimRunner(output_folder='./temp_mc')  # Instantiates the runner with a temp folder set
+
 mc = Montecarlo(sallenkey, runner)  # Instantiates the Montecarlo class, with the asc file already in memory
 
 # The following lines set the default tolerances for the components
@@ -13,12 +14,14 @@ mc.set_tolerance('V', 0, distribution='normal')  # 10% tolerance, but using a no
 # Some components can have a different tolerance
 mc.set_tolerance('R1', 0.05)  # 5% tolerance for R1 only. This only overrides the default tolerance for R1
 
+mc.add_instruction('.func mc(x, tol) {x * (1 + tol * 2 * (random() - 0.5))}')  # Creates the missing mc() function
+
 # Tolerances can be set for parameters as well
 # mc.set_parameter_deviation('Vos', 3e-4, 5e-3, 'uniform')  # The keyword 'distribution' is optional
-mc.prepare_testbench(100)  # Prepares the testbench for 1000 simulations
+mc.prepare_testbench(num_runs=1000)  # Prepares the testbench for 1000 simulations
 
 # Finally the netlist is saved to a file
-mc.save_netlist('./testfiles/AudioAmp_mc.qsch')
+mc.save_netlist('./testfiles/AudioAmp_mc.net')  # TODO: Implement the conversion to spice file
 
 mc.run(100)  # Runs the simulation with splits of 100 runs each
 logs = mc.read_logfiles()   # Reads the log files and stores the results in the results attribute
