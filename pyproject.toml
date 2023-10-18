@@ -1,0 +1,31 @@
+[build-system]
+requires = [
+    "setuptools>=42",
+    "wheel"
+]
+build-backend = "setuptools.build_meta"
+[project]
+name = "qspice"
+version = "0.2"
+authors = [
+  { name="Nuno Brum", email="me@nunobrum.com" },
+]
+description = "A set of tools to operate with QSPICE"
+readme = "README.md"
+license = { file="LICENSE" }
+requires-python = ">=3.8"
+dependencies = [
+    "spicelib>=0.7",
+]
+classifiers=[
+    "Programming Language :: Python :: 3",
+    "License :: OSI Approved :: GNU General Public License v3 (GPLv3)",
+    "Operating System :: OS Independent",
+]
+
+[tool.setuptools.packages.find]
+# All the following settings are optional:
+where = ["."]  # ["."] by default
+include = ["*"]  # ["*"] by default
+exclude = [".idea", "doc", "doc_build", ".vscode", ".git"]  # empty by default
+namespaces = true  # true by default
