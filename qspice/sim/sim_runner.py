@@ -102,9 +102,10 @@ __author__ = "Nuno Canto Brum <nuno.brum@gmail.com>"
 __copyright__ = "Copyright 2020, Fribourg Switzerland"
 
 __all__ = ['SimRunner']
-
+from pathlib import Path
 
 from spicelib.sim.sim_runner import SimRunner as SimRunnerBase
+from spicelib.sim.simulator import Simulator
 from ..qspice import Qspice
 
 END_LINE_TERM = '\n'
@@ -129,9 +130,18 @@ class SimRunner(SimRunnerBase):
 
     """
 
-    def __init__(self, *, parallel_sims: int = 4, timeout: float = 600.0, verbose=True,
+    def __init__(self, *, simulator=None, parallel_sims: int = 4, timeout: float = 600.0, verbose=True,
                  output_folder: str = None):
         """Class Constructor"""
+        # Gets a simulator.
+        if simulator is None:
+            simulator = Qspice
+        elif isinstance(simulator, (str, Path)):
+            simulator = Qspice.create_from(simulator)
+        elif issubclass(simulator, Simulator):
+            simulator = simulator
+        else:
+            simulator = Qspice
         super().__init__(parallel_sims=parallel_sims, timeout=timeout, verbose=verbose,
-                         output_folder=output_folder, simulator=Qspice)
+                         output_folder=output_folder, simulator=simulator)
 
