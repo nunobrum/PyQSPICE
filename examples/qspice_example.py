@@ -1,8 +1,6 @@
 # -*- coding: utf-8 -*-
 
-
 from qspice import SimRunner, SpiceEditor, RawRead, sweep_log
-
 
 def processing_data(raw_file, log_file):
     print("Handling the simulation data of %s, log file %s" % (raw_file, log_file))
