@@ -6,7 +6,7 @@ QSPICE is a toolchain of python utilities design to interact specifically with Q
 
 * __raw_read.py__
   A pure python class that serves to read raw files into a python class.
-* __spice_editor.py and asc_editor.py__
+* __spice_editor.py and qsch_editor.py__
   Scripts that can update spice netlists. The following methods are available to manipulate the component values,
   parameters as well as the simulation commands. These methods allow to update a netlist without having to open the
   schematic in Qspice. The simulations can then be run in batch mode (see sim_runner.py).
@@ -20,7 +20,7 @@ QSPICE is a toolchain of python utilities design to interact specifically with Q
 
 * __sim_runner.py__
   A python script that can be used to run Qspice simulations in batch mode without having to open the Qspice GUI.
-  This in cooperation with the classes defined in spice_editor.py or asc_editor.py is useful because:
+  This in cooperation with the classes defined in spice_editor.py or qsch_editor.py is useful because:
 
     - Can overcome the limitation of only stepping 3 parameters
     - Different types of simulations .TRAN .AC .NOISE can be run in a single batch
@@ -65,7 +65,7 @@ The example below reads the data from a Spice Simulation called
 "TRAN - STEP.raw" and displays all steps of the "I(R1)" trace in a matplotlib plot
 
  ```python
-from spicelib import RawRead
+from qspice import RawRead
 
 from matplotlib import pyplot as plt
 
@@ -138,7 +138,7 @@ sim.file_cleanup()
 ```
 
 The example above is using the SpiceEditor to create and modify a spice netlist, but it is also possible to use the
-AscEditor to directly modify the .asc file. The edited .asc file can then be opened by the Qspice GUI and the
+QschEditor to directly modify the .qsch file. The edited .qsch file can then be opened by the Qspice GUI and the
 simulation can be run from there.
 
 ### QschEditor ###
@@ -150,7 +150,7 @@ The following example shows how to read a Qspice schematic, get the information 
 of a resistor, change the value of a parameter, add a simulation instruction and write the netlist to a file.
 
 ```python
-from spicelib.editor.qsch_editor import QschEditor
+from qspice import QschEditor
 
 audio_amp = QschEditor("./testfiles/AudioAmp.qsch")
 print("All Components", audio_amp.get_components())
@@ -176,13 +176,13 @@ The following classes are available:
 Please refer to the spicelib documentation for more information.
 
 ```python
-from qspice import SimRunner, QschEditor  # Imports the class that manipulates the asc file
+from qspice import SimRunner, QschEditor  # Imports the class that manipulates the qsch file
 from spicelib.sim.tookit.montecarlo import Montecarlo  # Imports the Montecarlo toolkit class
 
-sallenkey = QschEditor("./testfiles/AudioAmp.qsch")  # Reads the asc file into memory
+sallenkey = QschEditor("./testfiles/AudioAmp.qsch")  # Reads the qsch file into memory
 runner = SimRunner(output_folder='./temp_mc')  # Instantiates the runner with a temp folder set
 
-mc = Montecarlo(sallenkey, runner)  # Instantiates the Montecarlo class, with the asc file already in memory
+mc = Montecarlo(sallenkey, runner)  # Instantiates the Montecarlo class, with the qsch file already in memory
 
 # The following lines set the default tolerances for the components
 mc.set_tolerance('R', 0.01)  # 1% tolerance, default distribution is uniform
@@ -197,7 +197,7 @@ mc.add_instruction('.func mc(x, tol) {x * (1 + tol * 2 * (random() - 0.5))}')  #
 # Tolerances can be set for parameters as well
 # mc.set_parameter_deviation('Vos', 3e-4, 5e-3, 'uniform')  # The keyword 'distribution' is optional
 mc.prepare_testbench(num_runs=1000)  # Prepares the testbench for 1000 simulations
-mc.editor.save_as('./testfiles/AudioAmp_mc.qsch')  # Saves the modified asc file
+mc.editor.save_as('./testfiles/AudioAmp_mc.qsch')  # Saves the modified qsch file
 
 # Finally the netlist is saved to a file
 mc.save_netlist('./testfiles/AudioAmp_mc.net')  # TODO: Implement the conversion to spice file
@@ -260,6 +260,10 @@ Refer to the spicelib documentation for more information.
 * Alternative contact : nuno.brum@gmail.com
 
 ## History ##
+* Version 0.3
+  * Alignment with spicelib 0.8 
+  * Important Bugfix on the LTComplex class.
+  * Fixes and enhancing the analysis toolkit.
 * Version 0.2
   * First operating version
 * Version 0.1
