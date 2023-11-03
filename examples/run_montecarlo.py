@@ -21,10 +21,10 @@ mc.add_instruction('.func mc(x, tol) {x * (1 + tol * 2 * (random() - 0.5))}')  #
 mc.prepare_testbench(num_runs=1000)  # Prepares the testbench for 1000 simulations
 
 # Finally the netlist is saved to a file
-mc.save_netlist('./testfiles/AudioAmp_mc.net')  # TODO: Implement the conversion to spice file
+mc.save_netlist('./testfiles/AudioAmp_mc.net')  # Converts the asc file to a spice netlist file
 
-mc.run(100)  # Runs the simulation with splits of 100 runs each
+mc.run_testbench(max_runs_per_sim=100)  # Runs the simulation with splits of 100 runs each
 logs = mc.read_logfiles()   # Reads the log files and stores the results in the results attribute
 logs.export_data('./temp_mc/data.csv')  # Exports the data to a csv file
-logs.plot_histogram('fcut')  # Plots the histograms for the results
+logs.plot_histogram('gain')  # Plots the histograms for the results
 mc.cleanup_files()  # Deletes the temporary files
