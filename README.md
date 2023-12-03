@@ -260,6 +260,10 @@ Refer to the spicelib documentation for more information.
 * Alternative contact : nuno.brum@gmail.com
 
 ## History ##
+* Version 0.4
+  * SimAnalysis supporting both Qspice and LTSpice logfiles.
+  * FastWorstCaseAnalysis algorithm implemented
+  * Fix on the log reading of fourier data.
 * Version 0.3
   * Alignment with spicelib 0.8 
   * Important Bugfix on the LTComplex class.
