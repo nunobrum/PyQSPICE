@@ -17,7 +17,7 @@ netlist.set_component_value('R1', '4k')
 netlist.set_element_model('V1', "SINE(0 1 3k 0 0 0)")  # Modifying the
 netlist.add_instruction(".tran 1n 3m")
 netlist.add_instruction(".plot V(out)")
-netlist.add_instruction(".save all")
+netlist.add_instruction(".save V(*?*) I*(*?*))")  # Saves just the first level currents and voltages
 
 sim_no = 1
 # .step dec param cap 1p 10u 1

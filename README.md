@@ -260,6 +260,9 @@ Refer to the spicelib documentation for more information.
 * Alternative contact : nuno.brum@gmail.com
 
 ## History ##
+* Version 0.5.0
+  * Fixes on the montecarlo example.
+  * Aligning with spicelib 1.0.1
 * Version 0.4
   * SimAnalysis supporting both Qspice and LTSpice logfiles.
   * FastWorstCaseAnalysis algorithm implemented
