@@ -6,7 +6,7 @@ requires = [
 build-backend = "setuptools.build_meta"
 [project]
 name = "qspice"
-version = "0.5.0"
+version = "0.5.1"
 authors = [
   { name="Nuno Brum", email="me@nunobrum.com" },
 ]
@@ -15,7 +15,7 @@ readme = "README.md"
 license = { file="LICENSE" }
 requires-python = ">=3.8"
 dependencies = [
-    "spicelib>=1.0.2",
+    "spicelib>=1.0.3",
 ]
 classifiers=[
     "Programming Language :: Python :: 3",

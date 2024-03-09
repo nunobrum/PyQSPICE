@@ -261,7 +261,8 @@ Refer to the spicelib documentation for more information.
 
 ## History ##
 * Version 0.5.1
-  * Adding a tool that allows to convert LTSpice to QSpice Schematics (Alpha Stage - Not fully functional) 
+  * Adding a tool that allows to convert LTSpice to QSpice Schematics (Alpha Stage - Not fully functional)
+  * Correcting the generation of a .net from the QschEditor. (spicelib 1.0.3)
 * Version 0.5.0
   * Fixes on the montecarlo example.
   * Aligning with spicelib 1.0.1
