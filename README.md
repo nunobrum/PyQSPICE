@@ -1,11 +1,11 @@
-# PyQSPICE
+# QSPICE
 
 QSPICE is a toolchain of python utilities design to interact specifically with QSPICE.
 
 ## What is contained in this repository ##
 
 * __raw_read.py__
-  A pure python class that serves to read raw files into a python class.
+  A pure python class that serves to read qraw files into python.
 * __spice_editor.py and qsch_editor.py__
   Scripts that can update spice netlists. The following methods are available to manipulate the component values,
   parameters as well as the simulation commands. These methods allow to update a netlist without having to open the
@@ -30,7 +30,7 @@ QSPICE is a toolchain of python utilities design to interact specifically with Q
 
   Note: It was only tested with Windows based installations.
 
-It is based on the spicelib library and therefore most documentation can be found there.
+It is based on the `spicelib` library and therefore most documentation can be found there.
 
 The major difference is that in this library all defaults point to the QSpice and the tools that are not pertaining to QSPICE are not mapped
 
@@ -260,6 +260,8 @@ Refer to the spicelib documentation for more information.
 * Alternative contact : nuno.brum@gmail.com
 
 ## History ##
+* Version 0.5.1
+  * Adding a tool that allows to convert LTSpice to QSpice Schematics (Alpha Stage - Not fully functional) 
 * Version 0.5.0
   * Fixes on the montecarlo example.
   * Aligning with spicelib 1.0.1
