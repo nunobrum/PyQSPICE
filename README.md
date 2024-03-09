@@ -30,7 +30,7 @@ QSPICE is a toolchain of python utilities design to interact specifically with Q
 
   Note: It was only tested with Windows based installations.
 
-It is based on the `spicelib` library and therefore most documentation can be found there.
+It is based on the [SPICELIB](https://pypi.org/project/spicelib/) library and therefore most documentation can be found there.
 
 The major difference is that in this library all defaults point to the QSpice and the tools that are not pertaining to QSPICE are not mapped
 
