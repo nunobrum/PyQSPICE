@@ -260,6 +260,8 @@ Refer to the spicelib documentation for more information.
 * Alternative contact : nuno.brum@gmail.com
 
 ## History ##
+* Version 0.6.0
+  * Hierarchical Schematics are now supported. (Alignement with spicelib 1.1.1)
 * Version 0.5.1
   * Adding a tool that allows to convert LTSpice to QSpice Schematics (Alpha Stage - Not fully functional)
   * Correcting the generation of a .net from the QschEditor. (spicelib 1.0.3)
