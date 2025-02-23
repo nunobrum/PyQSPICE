@@ -260,6 +260,10 @@ Refer to the spicelib documentation for more information.
 * Alternative contact : nuno.brum@gmail.com
 
 ## History ##
+* Version 1.0.0
+  * Alignment with spicelib 1.4.1
+* Version 0.6.1
+  * Alignment with spicelib 1.2.2
 * Version 0.6.0
   * Hierarchical Schematics are now supported. (Alignement with spicelib 1.1.1)
 * Version 0.5.1
