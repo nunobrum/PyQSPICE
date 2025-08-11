@@ -1,5 +1,7 @@
 # QSPICE
 
+_Current Version: 1.0.1_
+
 QSPICE is a toolchain of python utilities design to interact specifically with QSPICE.
 
 ## What is contained in this repository ##
@@ -260,6 +262,8 @@ Refer to the spicelib documentation for more information.
 * Alternative contact : nuno.brum@gmail.com
 
 ## History ##
+* Version 1.0.1
+  * Alignment with spicelib 1.4.5 
 * Version 1.0.0
   * Alignment with spicelib 1.4.1
 * Version 0.6.1
