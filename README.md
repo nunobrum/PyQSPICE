@@ -4,6 +4,8 @@ _Current Version: 1.0.1_
 
 QSPICE is a toolchain of python utilities design to interact specifically with QSPICE.
 
+[Ad] For finding the best values for passive components I've created the [WizEIA Calculator](https://WizEIA.com).
+
 ## What is contained in this repository ##
 
 * __raw_read.py__
