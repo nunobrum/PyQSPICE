@@ -1,5 +1,3 @@
-# -*- coding: utf-8 -*-
-
 # Convenience direct imports from spicelib
 from spicelib.utils.sweep_iterators import *
 from spicelib.editor.qsch_editor import QschEditor
