@@ -68,7 +68,7 @@ class Qspice(Simulator):
     }
 
     @classmethod
-    def valid_switch(cls, switch, path='') -> list:
+    def valid_switch(cls, switch: str, path: str = '') -> list:
         """
         Validates a command line switch. The following options are available for QSPICE:
             * 'ASCII': Use ASCII file format for the output data(.qraw) file.
@@ -90,11 +90,10 @@ class Qspice(Simulator):
 
         :param switch: switch to be added. If the switch is not on the list above, it should be correctly formatted with
                        the preceding '-' switch
-        :type switch: str
+
         :param path: path to the file related to the switch being given.
-        :type path: str, optional
-        :return: Nothing
-        :rtype: None
+
+        :return: List of command line arguments
         """
         if switch in cls.qspice_args:
             switches = cls.qspice_args[switch]
@@ -104,7 +103,8 @@ class Qspice(Simulator):
             raise ValueError("Invalid switch for class ")
 
     @classmethod
-    def run(cls, netlist_file, cmd_line_switches, timeout):
+    def run(cls, netlist_file: str | Path, cmd_line_switches: list | None = None, timeout: float | None= None,
+            stdout=None, stderr=None, cwd: str | Path | None = None, exe_log: bool = False) -> int:
         log_file = Path(netlist_file).with_suffix('.log').as_posix()
         cmd_run = cls.spice_exe + ['-o', log_file] + [netlist_file] + cmd_line_switches
         # start execution

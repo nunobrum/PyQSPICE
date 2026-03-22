@@ -118,19 +118,19 @@ class SimRunner(SimRunnerBase):
 
     :param parallel_sims: Defines the number of parallel simulations that can be executed at the same time. Ideally this
                           number should be aligned to the number of CPUs (processor cores) available on the machine.
-    :type parallel_sims: int, optional
     :param timeout: Timeout parameter as specified on the os subprocess.run() function. Default is 600 seconds, i.e.
         10 minutes. For no timeout, set to None.
-    :type timeout: float, optional
     :param verbose: If True, it enables a richer printout of the program execution.
-    :type verbose: bool, optional
     :param output_folder: specifying which directory shall be used for simulation files (raw and log files).
-    :param output_folder: str
-
     """
 
-    def __init__(self, *, simulator=None, parallel_sims: int = 4, timeout: float = 600.0, verbose=True,
-                 output_folder: str = None):
+    def __init__(self, *,
+                 simulator: str | Path | type[Simulator] = None,
+                 parallel_sims: int = 4,
+                 timeout: float = 600.0,
+                 verbose: bool = True,
+                 output_folder: str = None
+                 ):
         """Class Constructor"""
         # Gets a simulator.
         if simulator is None:
