@@ -264,6 +264,8 @@ Refer to the spicelib documentation for more information.
 * Alternative contact : nuno.brum@gmail.com
 
 ## History ##
+* Version 2.0.1 (spicelib 1.6.2)
+  * Object-oriented manipulation of components 
 * Version 1.1.1 (spicelib 1.5.1)
   * Removing the type indication from docstrings.
 * Version 1.1.0
@@ -276,7 +278,7 @@ Refer to the spicelib documentation for more information.
 * Version 0.6.1
   * Alignment with spicelib 1.2.2
 * Version 0.6.0
-  * Hierarchical Schematics are now supported. (Alignement with spicelib 1.1.1)
+  * Hierarchical Schematics are now supported. (Alignment with spicelib 1.1.1)
 * Version 0.5.1
   * Adding a tool that allows to convert LTSpice to QSpice Schematics (Alpha Stage - Not fully functional)
   * Correcting the generation of a .net from the QschEditor. (spicelib 1.0.3)
